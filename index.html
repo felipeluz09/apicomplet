@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechStore Brasil | E-commerce Full-Stack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .animate-drawer { animation: slideInRight 0.25s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Barra Superior de Status da API -->
+  <div class="bg-indigo-950 text-indigo-100 text-xs py-2 px-4 flex flex-wrap items-center justify-center gap-3 text-center font-medium">
+    <span>Frete Grátis acima de <strong class="text-amber-400">R$ 299,00</strong></span>
+    <span>•</span>
+    <span id="apiStatusBanner">API conectada em: <code id="currentApiUrlLabel" class="text-emerald-300">http://localhost:3000</code></span>
+    <button onclick="openApiConfigModal()" class="underline text-indigo-300 hover:text-white font-bold">
+      Alterar URL da API
+    </button>
+  </div>
+
+  <!-- Cabeçalho Principal -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      <a href="#" onclick="resetFilters(); return false;" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md group-hover:bg-indigo-700 transition">
+          T
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight text-slate-900">TechStore</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 block -mt-1">Brasil</span>
+        </div>
+      </a>
+
+      <div class="flex-1 max-w-xl order-3 md:order-2 w-full md:w-auto">
+        <div class="relative">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Buscar produtos no servidor (ex: notebook, teclado, monitor)..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition"
+          />
+          <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 order-2 md:order-3">
+        <div id="authArea" class="flex items-center gap-2"></div>
+
+        <button
+          onclick="toggleCartDrawer(true)"
+          class="relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition shadow-sm"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="hidden sm:inline">Carrinho</span>
+          <span id="cartBadge" class="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 text-xs font-bold rounded-full bg-indigo-500 text-white">
+            0
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="max-w-2xl">
+        <span class="inline-block px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-xs font-semibold uppercase tracking-wider mb-2.5">
+          Integração Full-Stack • AV1, AV2 e AV3
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          Vitrine Integrada à API Node.js + Express
+        </h1>
+        <p class="mt-2.5 text-indigo-100 text-sm leading-relaxed">
+          Autenticação via JWT, catálogo filtrado no servidor com imagens hospedadas fora do GitHub, carrinho no LocalStorage e histórico de pedidos no banco de dados.
+        </p>
+      </div>
+      <div class="flex flex-col gap-2 bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 text-xs shrink-0">
+        <div class="flex items-center gap-2 text-emerald-300 font-bold">
+          <span>✓</span> <span>AV1: Cadastro, Login e Perfil JWT</span>
+        </div>
+        <div class="flex items-center gap-2 text-emerald-300 font-bold">
+          <span>✓</span> <span>AV2: Filtros de Produtos na API</span>
+        </div>
+        <div class="flex items-center gap-2 text-emerald-300 font-bold">
+          <span>✓</span> <span>AV3: Compras Múltiplas & Histórico</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div id="categoryFilters" class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0"></div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <label for="sortSelect" class="text-xs font-semibold text-slate-500 uppercase">Ordenar:</label>
+        <select
+          id="sortSelect"
+          class="text-sm border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="default">Padrão</option>
+          <option value="preco_asc">Menor Preço</option>
+          <option value="preco_desc">Maior Preço</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <p id="resultsCount" class="text-sm text-slate-600 font-medium">Buscando produtos no servidor...</p>
+      <span id="serverSourceBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 font-semibold">
+        Conectando à API...
+      </span>
+    </div>
+
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+  </main>
+
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div>
+        <span class="font-bold text-white">TechStore Brasil</span> • Front-end conectado à API Node.js + Express
+      </div>
+      <button onclick="openApiConfigModal()" class="text-indigo-400 hover:text-indigo-300 font-semibold">
+        Configurar Endereço do Servidor (API)
+      </button>
+    </div>
+  </footer>
+
+  <!-- DRAWER DO CARRINHO -->
+  <div id="cartOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden" onclick="toggleCartDrawer(false)"></div>
+  <aside id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 hidden flex-col animate-drawer">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-bold text-slate-900">Seu Carrinho</h2>
+        <span id="drawerCartCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">0 itens</span>
+      </div>
+      <button onclick="toggleCartDrawer(false)" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">✕</button>
+    </div>
+
+    <div class="px-6 py-3 bg-indigo-50 border-b border-indigo-100">
+      <p id="freeShippingText" class="text-xs font-medium text-indigo-900 mb-1.5"></p>
+      <div class="w-full h-2 bg-indigo-200 rounded-full overflow-hidden">
+        <div id="freeShippingBar" class="h-full bg-indigo-600 transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+
+    <div id="cartFooter" class="p-6 border-t border-slate-200 bg-slate-50 space-y-3">
+      <div class="flex justify-between text-sm text-slate-600">
+        <span>Subtotal</span>
+        <span id="cartSubtotal" class="font-semibold text-slate-900">R$ 0,00</span>
+      </div>
+      <div class="flex justify-between text-sm text-slate-600">
+        <span>Frete</span>
+        <span id="cartShipping" class="font-semibold text-slate-900">R$ 0,00</span>
+      </div>
+      <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+        <span>Total</span>
+        <span id="cartTotal" class="text-indigo-600">R$ 0,00</span>
+      </div>
+      <button
+        onclick="startCheckout()"
+        class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition"
+      >
+        Finalizar Compra →
+      </button>
+    </div>
+  </aside>
+
+  <!-- MODAL DE LOGIN E CADASTRO (AV1) -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="font-bold text-lg">Área do Cliente (AV1)</h3>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 border-b border-slate-200 bg-slate-50 text-sm font-bold">
+        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="py-3 text-indigo-600 border-b-2 border-indigo-600 bg-white">
+          Entrar
+        </button>
+        <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="py-3 text-slate-500 hover:text-slate-800">
+          Criar Conta
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div id="authAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">E-mail</label>
+            <input id="loginEmail" type="email" required placeholder="seu@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Senha</label>
+            <input id="loginPassword" type="password" required placeholder="••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
+            Entrar na Conta
+          </button>
+          <button type="button" onclick="fillDemoAccount()" class="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition">
+            Preencher Conta Demo (cliente@techstore.com.br)
+          </button>
+        </form>
+
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome Completo</label>
+            <input id="regName" type="text" required placeholder="Ex: Maria Oliveira" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">E-mail</label>
+            <input id="regEmail" type="email" required placeholder="maria@email.com" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Endereço Padrão</label>
+            <input id="regAddress" type="text" placeholder="Rua das Flores, 100 - Centro" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Senha</label>
+            <input id="regPassword" type="password" minlength="4" required placeholder="Crie uma senha" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">
+            Cadastrar na API
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERFIL DO CLIENTE (AV1) -->
+  <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-indigo-950 text-white flex items-center justify-between">
+        <h3 class="font-bold text-lg">Meu Perfil (Autenticado via JWT)</h3>
+        <button onclick="closeProfileModal()" class="text-indigo-200 hover:text-white">✕</button>
+      </div>
+      <div id="profileContent" class="p-6 space-y-3 text-sm"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE HISTÓRICO DE COMPRAS (AV3) -->
+  <div id="ordersModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-lg">Minhas Compras Realizadas (AV3)</h3>
+          <p class="text-xs text-slate-300">Consultadas diretamente do banco de dados via JWT</p>
+        </div>
+        <button onclick="closeOrdersModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div id="ordersContent" class="p-6 max-h-[70vh] overflow-y-auto space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CHECKOUT (AV3) -->
+  <div id="checkoutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-200 my-8">
+      <div class="px-6 py-4 bg-indigo-950 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-lg">Finalizar Pedido na API (AV3)</h3>
+          <p id="checkoutCustomerInfo" class="text-xs text-indigo-200"></p>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-indigo-200 hover:text-white">✕</button>
+      </div>
+
+      <form onsubmit="handleCheckoutSubmit(event)" class="p-6 space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Endereço Completo de Entrega</label>
+          <input id="chkAddress" type="text" required placeholder="Rua, Número, Bairro, Cidade - UF, CEP" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Forma de Pagamento</label>
+          <select id="chkPayment" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="PIX">Pix (Aprovação Imediata)</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Boleto Bancário">Boleto Bancário</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 text-sm">
+          <div class="flex justify-between text-slate-600">
+            <span>Itens no pedido (<span id="chkItemCount">0</span>)</span>
+            <span id="chkSubtotal">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Frete</span>
+            <span id="chkShipping">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+            <span>Total do Pedido</span>
+            <span id="chkTotal" class="text-indigo-600">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" onclick="closeCheckoutModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">
+            Cancelar
+          </button>
+          <button type="submit" id="confirmOrderBtn" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md">
+            Confirmar Compra
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURAÇÃO DA URL DA API -->
+  <div id="apiConfigModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="font-bold text-base">Configurar URL da API Back-end</h3>
+        <button onclick="closeApiConfigModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <form onsubmit="saveApiUrl(event)" class="p-6 space-y-4">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Cole abaixo o link gerado pelo <strong>Render</strong> para a sua API (ex.: <code class="bg-slate-100 px-1.5 py-0.5 rounded">https://sua-api.onrender.com</code>):
+        </p>
+        <input id="apiUrlInput" type="url" required placeholder="https://sua-api.onrender.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="resetApiUrl()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">
+            Usar Localhost
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+            Salvar e Reconectar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium border border-slate-700">
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+    <span id="toastMessage">Mensagem</span>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      API_URL: 'techstore_api_url',
+      TOKEN: 'techstore_jwt_token',
+      USER: 'techstore_user',
+      CART: 'techstore_cart'
+    };
+
+    // Permite configurar via parâmetro ?api=https://... na URL ou pelo botão no topo
+    const urlParamApi = new URLSearchParams(window.location.search).get('api');
+    if (urlParamApi) {
+      localStorage.setItem(STORAGE_KEYS.API_URL, urlParamApi.trim().replace(/\/+$/, ''));
+    }
+
+    let API_BASE_URL = localStorage.getItem(STORAGE_KEYS.API_URL) || 'http://localhost:3000';
+    let allProducts = [];
+    let cart = [];
+    let currentUser = null;
+    let authToken = null;
+    let selectedCategory = 'todas';
+    let searchQuery = '';
+    let sortBy = 'default';
+    let pendingCheckout = false;
+
+    const SAFE_IMAGE_FALLBACK = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#e2e8f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#475569">TechStore Produto</text></svg>`
+    );
+
+    const formatBRL = (val) => Number(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    let toastTimer;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }, 3200);
+    }
+
+    async function init() {
+      document.getElementById('currentApiUrlLabel').textContent = API_BASE_URL;
+      authToken = localStorage.getItem(STORAGE_KEYS.TOKEN) || null;
+      try {
+        currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null');
+      } catch {
+        currentUser = null;
+      }
+      try {
+        cart = JSON.parse(localStorage.getItem(STORAGE_KEYS.CART) || '[]');
+      } catch {
+        cart = [];
+      }
+
+      renderAuthUI();
+      renderCartUI();
+      setupListeners();
+      await fetchProductsFromServer();
+    }
+
+    function setupListeners() {
+      let debounce;
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          searchQuery = e.target.value.trim();
+          fetchProductsFromServer();
+        }, 300);
+      });
+
+      document.getElementById('sortSelect').addEventListener('change', (e) => {
+        sortBy = e.target.value;
+        fetchProductsFromServer();
+      });
+    }
+
+    async function fetchProductsFromServer() {
+      const grid = document.getElementById('productsGrid');
+      const badge = document.getElementById('serverSourceBadge');
+      const countEl = document.getElementById('resultsCount');
+
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('nome', searchQuery);
+        if (selectedCategory && selectedCategory !== 'todas') params.append('categoria', selectedCategory);
+        if (sortBy !== 'default') params.append('ordenar', sortBy);
+
+        const res = await fetch(`${API_BASE_URL}/api/produtos?${params.toString()}`);
+        if (!res.ok) throw new Error('Erro ao consultar API');
+
+        const data = await res.json();
+        allProducts = data.produtos || [];
+
+        badge.textContent = 'Conectado à API Node.js';
+        badge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold';
+
+        if (selectedCategory === 'todas' && !searchQuery) {
+          renderCategories(allProducts);
+        }
+        renderProducts(allProducts);
+      } catch (err) {
+        badge.textContent = 'API Offline (Configure o link do Render)';
+        badge.className = 'text-xs px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-semibold';
+        countEl.textContent = 'Aguardando conexão com o servidor...';
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl border border-rose-200 p-8 text-center space-y-3">
+            <p class="text-lg font-bold text-rose-700">Servidor Back-end não encontrado em ${API_BASE_URL}</p>
+            <p class="text-sm text-slate-600 max-w-lg mx-auto">
+              Se você já publicou a API no <strong>Render</strong>, clique no botão abaixo para colar o link dela:
+            </p>
+            <div class="flex justify-center gap-3 pt-2">
+              <button onclick="openApiConfigModal()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm">
+                Colar Link da API do Render
+              </button>
+              <button onclick="fetchProductsFromServer()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold">
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderCategories(products) {
+      const container = document.getElementById('categoryFilters');
+      const categories = ['todas', ...new Set(products.map(p => p.categoria))];
+
+      container.innerHTML = categories.map(cat => {
+        const active = selectedCategory === cat;
+        const label = cat === 'todas' ? 'Todos os Produtos' : cat;
+        return `
+          <button
+            onclick="selectCategory('${cat}')"
+            class="px-3.5 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap transition ${
+              active
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+            }"
+          >
+            ${label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      document.querySelectorAll('#categoryFilters button').forEach(btn => {
+        const btnCat = btn.textContent.trim().toLowerCase();
+        const isMatch = (cat === 'todas' && btnCat === 'todos os produtos') || btnCat === cat.toLowerCase();
+        btn.className = isMatch
+          ? 'px-3.5 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap transition bg-indigo-600 text-white shadow-xs'
+          : 'px-3.5 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap transition bg-white text-slate-600 border border-slate-300 hover:bg-slate-100';
+      });
+      fetchProductsFromServer();
+    }
+
+    function resetFilters() {
+      selectedCategory = 'todas';
+      searchQuery = '';
+      sortBy = 'default';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sortSelect').value = 'default';
+      fetchProductsFromServer();
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('productsGrid');
+      const countEl = document.getElementById('resultsCount');
+
+      countEl.textContent = `${products.length} ${products.length === 1 ? 'produto encontrado' : 'produtos encontrados'}`;
+
+      if (products.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl border border-slate-200 p-10 text-center">
+            <p class="font-bold text-slate-800">Nenhum produto corresponde ao filtro selecionado.</p>
+            <button onclick="resetFilters()" class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold">
+              Limpar Filtros
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = products.map(prod => `
+        <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition flex flex-col group">
+          <div class="relative h-48 bg-slate-100 overflow-hidden flex items-center justify-center">
+            <img
+              src="${prod.imagemUrl}"
+              alt="${prod.nome}"
+              onerror="this.onerror=null;this.src='${SAFE_IMAGE_FALLBACK}';"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+            />
+            <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/95 text-[11px] font-bold uppercase text-slate-700 shadow-xs">
+              ${prod.categoria}
+            </span>
+            <span class="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-slate-900/80 text-white text-[11px] font-semibold">
+              Estoque: ${prod.estoque}
+            </span>
+          </div>
+
+          <div class="p-5 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base line-clamp-2">${prod.nome}</h3>
+              <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">${prod.descricao || ''}</p>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <div class="mb-3">
+                <span class="text-xs text-slate-400 block">Preço Unitário</span>
+                <span class="text-xl font-extrabold text-slate-900">${formatBRL(prod.preco)}</span>
+              </div>
+
+              <button
+                onclick='addToCart(${JSON.stringify({ id: prod.id, nome: prod.nome, preco: prod.preco, imagemUrl: prod.imagemUrl })})'
+                class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition shadow-xs"
+              >
+                + Adicionar ao Carrinho
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function saveCart() {
+      localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+    }
+
+    function addToCart(product) {
+      const existing = cart.find(i => i.id === product.id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      saveCart();
+      renderCartUI();
+      showToast(`"${product.nome}" adicionado ao carrinho!`);
+    }
+
+    function updateCartQty(id, delta) {
+      const idx = cart.findIndex(i => i.id === id);
+      if (idx === -1) return;
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      saveCart();
+      renderCartUI();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      saveCart();
+      renderCartUI();
+    }
+
+    function getCartTotals() {
+      const totalItems = cart.reduce((acc, i) => acc + i.qty, 0);
+      const subtotal = cart.reduce((acc, i) => acc + i.preco * i.qty, 0);
+      const shipping = subtotal === 0 || subtotal >= 299 ? 0 : 24.90;
+      const total = subtotal + shipping;
+      return { totalItems, subtotal, shipping, total };
+    }
+
+    function renderCartUI() {
+      const { totalItems, subtotal, shipping, total } = getCartTotals();
+      document.getElementById('cartBadge').textContent = totalItems;
+      document.getElementById('drawerCartCount').textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`;
+
+      const progress = Math.min(100, (subtotal / 299) * 100);
+      document.getElementById('freeShippingBar').style.width = `${progress}%`;
+      document.getElementById('freeShippingText').innerHTML = subtotal >= 299
+        ? 'Você ganhou <strong class="text-emerald-700">Frete Grátis</strong>!'
+        : `Faltam <strong>${formatBRL(299 - subtotal)}</strong> para <strong>Frete Grátis</strong>.`;
+
+      const container = document.getElementById('cartItemsContainer');
+      const footer = document.getElementById('cartFooter');
+
+      if (cart.length === 0) {
+        footer.classList.add('hidden');
+        container.innerHTML = `<p class="text-center text-sm text-slate-500 py-12">Seu carrinho está vazio.</p>`;
+        return;
+      }
+
+      footer.classList.remove('hidden');
+      container.innerHTML = cart.map(item => `
+        <div class="flex gap-3 bg-white p-3 rounded-xl border border-slate-200">
+          <img src="${item.imagemUrl}" onerror="this.onerror=null;this.src='${SAFE_IMAGE_FALLBACK}';" class="w-16 h-16 object-cover rounded-lg bg-slate-100 shrink-0" />
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold text-slate-900 truncate">${item.nome}</h4>
+            <p class="text-xs font-semibold text-indigo-600">${formatBRL(item.preco)}</p>
+            <div class="flex items-center justify-between mt-2">
+              <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden">
+                <button onclick="updateCartQty(${item.id}, -1)" class="px-2.5 py-0.5 text-xs font-bold hover:bg-slate-100">−</button>
+                <span class="px-2.5 py-0.5 text-xs font-bold bg-slate-50">${item.qty}</span>
+                <button onclick="updateCartQty(${item.id}, 1)" class="px-2.5 py-0.5 text-xs font-bold hover:bg-slate-100">+</button>
+              </div>
+              <button onclick="removeFromCart(${item.id})" class="text-xs font-semibold text-rose-600">Remover</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('cartSubtotal').textContent = formatBRL(subtotal);
+      document.getElementById('cartShipping').textContent = shipping === 0 ? 'Grátis' : formatBRL(shipping);
+      document.getElementById('cartTotal').textContent = formatBRL(total);
+    }
+
+    function toggleCartDrawer(open) {
+      const overlay = document.getElementById('cartOverlay');
+      const drawer = document.getElementById('cartDrawer');
+      overlay.classList.toggle('hidden', !open);
+      drawer.classList.toggle('hidden', !open);
+      drawer.classList.toggle('flex', open);
+    }
+
+    function renderAuthUI() {
+      const authArea = document.getElementById('authArea');
+      if (currentUser && authToken) {
+        const firstName = currentUser.nome.split(' ')[0];
+        authArea.innerHTML = `
+          <button onclick="openOrdersModal()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 transition">
+            Minhas Compras
+          </button>
+          <button onclick="openProfileModal()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-200 transition">
+            Olá, ${firstName}
+          </button>
+          <button onclick="logout()" class="px-2.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition">
+            Sair
+          </button>
+        `;
+      } else {
+        authArea.innerHTML = `
+          <button onclick="openAuthModal('login')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-800 text-sm font-semibold transition">
+            Entrar / Cadastrar
+          </button>
+        `;
+      }
+    }
+
+    function openAuthModal(tab = 'login', alertMsg = '') {
+      const modal = document.getElementById('authModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      switchAuthTab(tab);
+
+      const alertBox = document.getElementById('authAlert');
+      if (alertMsg) {
+        alertBox.textContent = alertMsg;
+        alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200';
+      } else {
+        alertBox.classList.add('hidden');
+      }
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('authModal').classList.remove('flex');
+    }
+
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+      document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+      document.getElementById('tabLoginBtn').className = isLogin
+        ? 'py-3 text-indigo-600 border-b-2 border-indigo-600 bg-white'
+        : 'py-3 text-slate-500 hover:text-slate-800';
+      document.getElementById('tabRegisterBtn').className = !isLogin
+        ? 'py-3 text-indigo-600 border-b-2 border-indigo-600 bg-white'
+        : 'py-3 text-slate-500 hover:text-slate-800';
+    }
+
+    function fillDemoAccount() {
+      document.getElementById('loginEmail').value = 'cliente@techstore.com.br';
+      document.getElementById('loginPassword').value = '123456';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const senha = document.getElementById('loginPassword').value;
+      const alertBox = document.getElementById('authAlert');
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/clientes/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alertBox.textContent = data.erro || 'Falha ao fazer login.';
+          alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+          return;
+        }
+
+        authToken = data.token;
+        currentUser = data.cliente;
+        localStorage.setItem(STORAGE_KEYS.TOKEN, authToken);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(currentUser));
+
+        renderAuthUI();
+        closeAuthModal();
+        showToast(`Bem-vindo(a), ${currentUser.nome.split(' ')[0]}!`);
+
+        if (pendingCheckout) {
+          pendingCheckout = false;
+          openCheckoutModal();
+        }
+      } catch (err) {
+        alertBox.textContent = 'Erro de conexão com a API. Configure o link do Render no topo.';
+        alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const nome = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const endereco = document.getElementById('regAddress').value.trim();
+      const senha = document.getElementById('regPassword').value;
+      const alertBox = document.getElementById('authAlert');
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/clientes/cadastro`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, senha, endereco })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alertBox.textContent = data.erro || 'Erro ao cadastrar cliente.';
+          alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+          return;
+        }
+
+        authToken = data.token;
+        currentUser = data.cliente;
+        localStorage.setItem(STORAGE_KEYS.TOKEN, authToken);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(currentUser));
+
+        renderAuthUI();
+        closeAuthModal();
+        showToast('Cadastro realizado na API com sucesso!');
+
+        if (pendingCheckout) {
+          pendingCheckout = false;
+          openCheckoutModal();
+        }
+      } catch (err) {
+        alertBox.textContent = 'Erro de conexão com a API.';
+        alertBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+      }
+    }
+
+    async function openProfileModal() {
+      const modal = document.getElementById('profileModal');
+      const content = document.getElementById('profileContent');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      content.innerHTML = '<p class="text-slate-500">Carregando dados do servidor...</p>';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/clientes/perfil`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro || 'Erro ao carregar perfil');
+
+        const p = data.perfil;
+        content.innerHTML = `
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <p><strong>ID do Cliente:</strong> #${p.id}</p>
+            <p><strong>Nome:</strong> ${p.nome}</p>
+            <p><strong>E-mail:</strong> ${p.email}</p>
+            <p><strong>Endereço:</strong> ${p.endereco || 'Não informado'}</p>
+            <p><strong>Cadastrado em:</strong> ${p.criado_em}</p>
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `<p class="text-rose-600 font-semibold">${err.message}</p>`;
+      }
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+      document.getElementById('profileModal').classList.remove('flex');
+    }
+
+    function logout() {
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      renderAuthUI();
+      showToast('Sessão encerrada.');
+    }
+
+    function startCheckout() {
+      if (cart.length === 0) return showToast('Carrinho vazio.');
+      toggleCartDrawer(false);
+
+      if (!authToken || !currentUser) {
+        pendingCheckout = true;
+        openAuthModal('login', 'Faça login para enviar seu pedido autenticado (JWT) para a API.');
+        return;
+      }
+      openCheckoutModal();
+    }
+
+    function openCheckoutModal() {
+      const { totalItems, subtotal, shipping, total } = getCartTotals();
+      document.getElementById('checkoutCustomerInfo').textContent = `Cliente: ${currentUser.nome} (${currentUser.email})`;
+      document.getElementById('chkAddress').value = currentUser.endereco || '';
+      document.getElementById('chkItemCount').textContent = totalItems;
+      document.getElementById('chkSubtotal').textContent = formatBRL(subtotal);
+      document.getElementById('chkShipping').textContent = shipping === 0 ? 'Grátis' : formatBRL(shipping);
+      document.getElementById('chkTotal').textContent = formatBRL(total);
+
+      document.getElementById('checkoutModal').classList.remove('hidden');
+      document.getElementById('checkoutModal').classList.add('flex');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+      document.getElementById('checkoutModal').classList.remove('flex');
+    }
+
+    async function handleCheckoutSubmit(e) {
+      e.preventDefault();
+      const enderecoEntrega = document.getElementById('chkAddress').value.trim();
+      const formaPagamento = document.getElementById('chkPayment').value;
+      const btn = document.getElementById('confirmOrderBtn');
+
+      const itens = cart.map(item => ({
+        produtoId: item.id,
+        quantidade: item.qty
+      }));
+
+      btn.disabled = true;
+      btn.textContent = 'Registrando no Banco...';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/compras`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ itens, formaPagamento, enderecoEntrega })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.erro || 'Erro ao registrar compra.');
+        }
+
+        cart = [];
+        saveCart();
+        renderCartUI();
+        closeCheckoutModal();
+        await fetchProductsFromServer();
+
+        showToast(`Pedido #${data.compra.id} salvo no banco de dados!`);
+        openOrdersModal();
+      } catch (err) {
+        alert(`Erro ao finalizar pedido: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirmar Compra';
+      }
+    }
+
+    async function openOrdersModal() {
+      const modal = document.getElementById('ordersModal');
+      const content = document.getElementById('ordersContent');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      content.innerHTML = '<p class="text-sm text-slate-500">Buscando suas compras na API...</p>';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/compras`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.erro || 'Erro ao buscar histórico');
+
+        if (!data.compras || data.compras.length === 0) {
+          content.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Você ainda não realizou nenhuma compra.</p>';
+          return;
+        }
+
+        content.innerHTML = data.compras.map(c => `
+          <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
+              <div>
+                <span class="text-xs font-extrabold uppercase text-indigo-600">Pedido #${c.id}</span>
+                <span class="text-xs text-slate-500 block">${c.dataCompra}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-semibold text-slate-600 block">${c.formaPagamento}</span>
+                <span class="text-base font-extrabold text-emerald-700">${formatBRL(c.valorTotal)}</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-600"><strong>Entrega:</strong> ${c.enderecoEntrega}</p>
+            <div class="space-y-2">
+              ${c.itens.map(it => `
+                <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 text-xs">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <img src="${it.imagemUrl}" onerror="this.onerror=null;this.src='${SAFE_IMAGE_FALLBACK}';" class="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0" />
+                    <span class="font-bold text-slate-800 truncate">${it.quantidade}x ${it.nome}</span>
+                  </div>
+                  <span class="font-semibold text-slate-700 shrink-0 ml-2">${formatBRL(it.subtotal)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        content.innerHTML = `<p class="text-sm text-rose-600 font-semibold">${err.message}</p>`;
+      }
+    }
+
+    function closeOrdersModal() {
+      document.getElementById('ordersModal').classList.add('hidden');
+      document.getElementById('ordersModal').classList.remove('flex');
+    }
+
+    function openApiConfigModal() {
+      document.getElementById('apiUrlInput').value = API_BASE_URL;
+      document.getElementById('apiConfigModal').classList.remove('hidden');
+      document.getElementById('apiConfigModal').classList.add('flex');
+    }
+
+    function closeApiConfigModal() {
+      document.getElementById('apiConfigModal').classList.add('hidden');
+      document.getElementById('apiConfigModal').classList.remove('flex');
+    }
+
+    function saveApiUrl(e) {
+      e.preventDefault();
+      const url = document.getElementById('apiUrlInput').value.trim().replace(/\/+$/, '');
+      API_BASE_URL = url;
+      localStorage.setItem(STORAGE_KEYS.API_URL, API_BASE_URL);
+      document.getElementById('currentApiUrlLabel').textContent = API_BASE_URL;
+      closeApiConfigModal();
+      showToast('URL da API atualizada!');
+      fetchProductsFromServer();
+    }
+
+    function resetApiUrl() {
+      API_BASE_URL = 'http://localhost:3000';
+      localStorage.setItem(STORAGE_KEYS.API_URL, API_BASE_URL);
+      document.getElementById('apiUrlInput').value = API_BASE_URL;
+      document.getElementById('currentApiUrlLabel').textContent = API_BASE_URL;
+      closeApiConfigModal();
+      fetchProductsFromServer();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
